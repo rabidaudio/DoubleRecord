@@ -1,5 +1,6 @@
 package audio.rabid.dev.doublerecord;
 
+import android.app.IntentService;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -13,7 +14,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        startService(new Intent(this, RecordService.class));
+        Intent i = new Intent(this, RecordService.class);
+//        Intent i = new Intent(RecordService.RECORD_ACTION);
+        i.setAction(RecordService.RECORD_ACTION);
+        startService(i);
     }
 
     @Override
