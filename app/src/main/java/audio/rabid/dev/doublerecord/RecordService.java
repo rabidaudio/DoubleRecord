@@ -42,8 +42,6 @@ public class RecordService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         String action = intent.getAction();
 
-//        Toast.makeText(this, action, Toast.LENGTH_LONG).show();
-
         //TODO
 
         mainHandler.post(new Runnable() {

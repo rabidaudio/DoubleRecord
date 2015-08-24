@@ -6,18 +6,40 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
+
+import butterknife.Bind;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 public class MainActivity extends AppCompatActivity {
+
+    @Bind(R.id.videoRecordView) VideoRecordView videoRecordView;
+    @Bind(R.id.start) Button recordButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        ButterKnife.bind(this);
 
-        Intent i = new Intent(this, RecordService.class);
-//        Intent i = new Intent(RecordService.RECORD_ACTION);
-        i.setAction(RecordService.RECORD_ACTION);
-        startService(i);
+//        Intent i = new Intent(this, RecordService.class);
+//        i.setAction(RecordService.RECORD_ACTION);
+//        startService(i);
+
+    }
+
+    @OnClick(R.id.start)
+    public void toggleRecording(){
+        if(videoRecordView.isRecording()){
+            videoRecordView.stopRecording();
+            recordButton.setVisibility(View.INVISIBLE);
+            recordButton.setOnClickListener(null);
+        }else{
+            recordButton.setText("stop");
+            videoRecordView.startRecording();
+        }
     }
 
     @Override
@@ -40,5 +62,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onDestroy(){
+        super.onDestroy();
+        videoRecordView.destroy();
     }
 }

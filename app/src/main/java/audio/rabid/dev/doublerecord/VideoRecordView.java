@@ -5,6 +5,7 @@ import android.hardware.Camera;
 import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
 import android.os.Environment;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -22,25 +23,43 @@ public class VideoRecordView extends SurfaceView implements SurfaceHolder.Callba
 
     private static final String TAG = VideoRecordView.class.getSimpleName();
 
-    Camera camera;
+    private Camera camera;
 
-    MediaRecorder cameraRecorder = new MediaRecorder();
+    private MediaRecorder cameraRecorder = new MediaRecorder();
+
+    private boolean recordingReady = false;
+
+    private boolean isRecording = false;
 
     public VideoRecordView(Context context) {
         super(context);
+        init(context);
+    }
 
+    public VideoRecordView(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        init(context);
+    }
+
+    public VideoRecordView(Context context, AttributeSet attrs, int defStyle) {
+        super(context, attrs, defStyle);
+        init(context);
+    }
+
+    private void init(Context context){
         getHolder().addCallback(this);
 
         camera = Camera.open();
 
         if(camera == null){
             Toast.makeText(context, "Camera unavailable", Toast.LENGTH_LONG).show();
-            return;
         }
     }
 
+
     public void destroy(){
         if(camera != null) camera.release();
+        if(cameraRecorder != null) stopRecording();
     }
 
     @Override
@@ -68,7 +87,23 @@ public class VideoRecordView extends SurfaceView implements SurfaceHolder.Callba
 
     @Override
     public void onClick(View v) {
+        stopRecording();
+    }
 
+    public void startRecording(){
+        if(!recordingReady || isRecording) return;
+        cameraRecorder.start();
+    }
+
+    public void stopRecording(){
+        if(!isRecording) return;
+        cameraRecorder.stop();
+        cameraRecorder.reset();
+        cameraRecorder.release();
+    }
+
+    public boolean isRecording(){
+        return isRecording;
     }
 
     @Override
@@ -78,14 +113,19 @@ public class VideoRecordView extends SurfaceView implements SurfaceHolder.Callba
         cameraRecorder.setCamera(camera);
         cameraRecorder.setAudioSource(MediaRecorder.AudioSource.DEFAULT);
         cameraRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
-        cameraRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH));
-        cameraRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+//        cameraRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH));
+        cameraRecorder.setOutputFormat(MediaRecorder.OutputFormat.DEFAULT);
         cameraRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT);
         cameraRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.MPEG_4_SP); //H264?
 
-        File cameraRecordingFile = new File(Environment.getDataDirectory(), String.valueOf(System.currentTimeMillis()));
+        File cameraRecordingFile = new File(Environment.getExternalStorageDirectory(), String.valueOf(System.currentTimeMillis()+".mp4"));
         cameraRecorder.setOutputFile(cameraRecordingFile.getAbsolutePath());
-//            cameraRecorder.prepare();
 
+        try {
+            cameraRecorder.prepare();
+            recordingReady = true;
+        }catch (IOException e){
+            Log.e(TAG, "problem preparing recording", e);
+        }
     }
 }
